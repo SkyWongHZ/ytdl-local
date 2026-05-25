@@ -1,0 +1,17 @@
+{
+  "name": "ytdl-local",
+  "version": "0.1.0",
+  "description": "Personal learning project: a minimal local Node.js CLI wrapper around yt-dlp.",
+  "type": "module",
+  "bin": {
+    "ytdl-local": "./bin/ytdl-local.js"
+  },
+  "scripts": {
+    "start": "node ./bin/ytdl-local.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "UNLICENSED",
+  "private": true
+}
