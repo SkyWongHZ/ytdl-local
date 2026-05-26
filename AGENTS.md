@@ -59,7 +59,7 @@ The CLI currently supports:
 - One positional YouTube URL.
 - Optional `--out <dir>`, defaulting to `./downloads`.
 - Optional `--cookies-from-browser <browser>`, such as `chrome`, `safari`, `firefox`, or `edge`.
-- Optional `--quality stable|sharp`, defaulting to `stable`.
+- Optional `--quality auto|stable|sharp`, defaulting to `auto`.
 
 Before downloading, it checks:
 
@@ -85,7 +85,13 @@ Base args include:
 
 These are required for current YouTube extraction behavior. Without them, YouTube may fail with JavaScript runtime or `n challenge` errors.
 
-The default `stable` format selector intentionally avoids AV1 first:
+The default `auto` format selector prefers stable high-resolution separate streams and intentionally avoids the high-bitrate HLS path unless the user asks for `sharp`:
+
+```bash
+bv*[height>1080][vcodec^=vp9]+ba/bv*[height>1080][vcodec^=vp09]+ba/bv*[height>1080][vcodec!*=av01]+ba/bv*[vcodec^=vp9]+ba/bv*[vcodec^=vp09]+ba/bv*[vcodec!*=av01]+ba/b
+```
+
+The optional `stable` format selector intentionally avoids AV1 first:
 
 ```bash
 bv*[vcodec^=vp9]+ba/bv*[vcodec^=vp09]+ba/bv*[vcodec!*=av01]+ba/b
@@ -109,6 +115,8 @@ The output container is still MKV:
 ```
 
 MKV was not the white-screen cause; the AV1 video codec was. `--remux-video mkv` keeps the final extension stable when `sharp` selects an already combined HLS stream.
+
+Downloads include `--abort-on-unavailable-fragments` so a missing DASH/HLS fragment fails early instead of producing a broken remux target.
 
 ## Subtitle Behavior
 

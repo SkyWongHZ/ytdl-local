@@ -41,7 +41,7 @@ ytdl-local
 - `YOUTUBE_URL`：必填，单个 YouTube 视频链接。
 - `--out <dir>`：可选，输出目录；不传时默认使用 `./downloads`。
 - `--cookies-from-browser <browser>`：可选，从浏览器读取登录态 cookies，支持 `chrome`、`safari`、`firefox`、`edge` 等 `yt-dlp` 支持的浏览器。
-- `--quality <stable|sharp>`：可选，画质策略；默认 `stable`。
+- `--quality <auto|stable|sharp>`：可选，画质策略；默认 `auto`。
 - `--help` / `-h`：输出使用说明。
 
 ### 4.2 输入校验
@@ -87,9 +87,21 @@ yt-dlp -J --skip-download --no-playlist
 
 ### 4.6 视频格式策略
 
-工具必须优先下载更易播放的高画质格式，并允许用户选择更高码率策略。
+工具必须默认使用智能画质策略：优先下载更易播放的高画质分离流，避免默认选择更容易受分片缺失影响的 HLS 高码率合并流，并允许用户显式选择更高码率策略。
 
-默认 `stable` 策略格式选择器为：
+默认 `auto` 策略格式选择器为：
+
+```bash
+bv*[height>1080][vcodec^=vp9]+ba/bv*[height>1080][vcodec^=vp09]+ba/bv*[height>1080][vcodec!*=av01]+ba/bv*[vcodec^=vp9]+ba/bv*[vcodec^=vp09]+ba/bv*[vcodec!*=av01]+ba/b
+```
+
+该策略含义：
+
+- 1080p 以上优先选择 VP9 或非 AV1 的高分辨率分离流。
+- 如果没有 1080p 以上合适格式，则回落到普通稳定分离流。
+- 不默认优先选择 HLS 高码率合并流，降低缺分片后封装失败的概率。
+
+可选 `stable` 策略格式选择器为：
 
 ```bash
 bv*[vcodec^=vp9]+ba/bv*[vcodec^=vp09]+ba/bv*[vcodec!*=av01]+ba/b
@@ -157,6 +169,14 @@ bv*[height>1080][vcodec^=vp9]+ba/bv*[height>1080][vcodec^=vp09]+ba/bv*[height>10
 - 一个或多个字幕文件，例如 `.zh.srt`、`.en.srt`。
 
 当选择到 HLS 合并流时，工具使用 `--remux-video mkv` 将最终结果无重编码封装为 MKV。
+
+下载时必须传入：
+
+```bash
+--abort-on-unavailable-fragments
+```
+
+目的：当 DASH/HLS 分片不可用时直接失败，避免跳过缺失分片后继续生成损坏的媒体文件或触发后处理封装失败。
 
 ## 5. 非功能需求
 

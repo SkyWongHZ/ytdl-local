@@ -1,76 +1,85 @@
 # ytdl-local
 
-Personal learning project: a minimal local Node.js CLI wrapper around `yt-dlp` and `ffmpeg` for experimenting with command-line tooling and media-processing workflows.
+本地 YouTube 单视频下载 CLI。用 Node.js 包装 `yt-dlp` 和 `ffmpeg`，负责参数校验、字幕策略、音视频合并和输出目录管理。
 
-This project is not a hosted download service, not a content redistribution tool, and not intended to bypass platform restrictions. Use it only with content that you own, have permission to download, or that the platform explicitly allows you to download.
+> 个人学习项目。请只下载你拥有版权、已获授权，或平台明确允许下载的内容。
 
-## Usage
+## 功能
 
-```bash
-ytdl-local "https://www.youtube.com/watch?v=VIDEO_ID" --out ./downloads --cookies-from-browser chrome
-```
+✅ 下载单个 YouTube 视频
 
-You can also run it directly from this project:
+✅ 支持 `--cookies-from-browser` 读取浏览器登录态
 
-```bash
-node ./bin/ytdl-local.js "https://www.youtube.com/watch?v=VIDEO_ID" --out ./downloads --cookies-from-browser chrome
-```
+✅ 默认 `auto` 智能画质策略，优先高分辨率 VP9 / 非 AV1 来源
 
-Use sharper high-bitrate mode when the source video only has 1080p but YouTube offers a higher-bitrate stream:
+✅ 支持 `stable` / `sharp` 手动画质策略
 
-```bash
-ytdl-local "https://www.youtube.com/watch?v=VIDEO_ID" --out ./downloads --cookies-from-browser chrome --quality sharp
-```
+✅ 自动合并视频流和音频流为 `.mkv`
 
-Quote YouTube URLs in zsh because `?` can be interpreted by the shell.
+✅ 自动下载人工字幕；没有人工字幕时下载自动字幕
 
-## Requirements
+✅ 遇到缺失媒体分片时直接失败，避免生成损坏文件
+
+✅ 自动创建输出目录
+
+## 依赖
 
 - Node.js 18+
 - `yt-dlp`
 - `ffmpeg`
 
-## Output
+```bash
+brew install yt-dlp ffmpeg
+```
 
-The CLI saves video and subtitle files into the output directory.
+## 使用
 
-Default behavior:
+直接运行：
 
-- Downloads one YouTube video URL.
-- Defaults to `--quality stable`, preferring VP9 to avoid AV1 playback issues on some players.
-- Supports `--quality sharp`, which may download a larger high-bitrate stream when available.
-- Merges video and audio into MKV.
-- Remuxes the final result to MKV without re-encoding when needed.
-- Downloads manual subtitles when available, otherwise automatic subtitles.
-- Keeps subtitle files separate, such as `.zh.srt` or `.en.srt`.
+```bash
+node ./bin/ytdl-local.js "https://www.youtube.com/watch?v=VIDEO_ID" --out ./downloads --cookies-from-browser chrome
+```
 
-## iPhone Playback
+如果已执行 `npm link`：
 
-For iPhone, use VLC for iOS rather than the built-in player when using MKV and external subtitles.
+```bash
+ytdl-local "https://www.youtube.com/watch?v=VIDEO_ID" --out ./downloads --cookies-from-browser chrome
+```
 
-Put the `.mkv` file and the matching `.srt` subtitle files in the same VLC folder. If subtitles are not loaded automatically, select the subtitle file manually from VLC during playback.
+`--cookies-from-browser` 通常用于需要登录才能观看的内容；请选择已经登录 YouTube 的浏览器。
 
-## GitHub Upload Safety
+> zsh 里建议给 YouTube 链接加引号，避免 `?` 被 shell 解释。
 
-This public repository should contain only source code and documentation.
+## 画质策略
 
-Do not upload:
+默认不用传 `--quality`，等价于 `--quality auto`。
 
-- Downloaded videos.
-- Downloaded subtitles.
-- Browser cookies.
-- Cookie export files.
-- Login/session data.
-- Large media files.
+| 策略 | 用途 |
+| --- | --- |
+| `auto` | 默认推荐。优先 4K / 高分辨率 VP9 或非 AV1，找不到再回落到任意分辨率 |
+| `stable` | 不强求高分辨率，挑 VP9 优先的稳定组合，避开 AV1 |
+| `sharp` | 与 `auto` 类似，但允许 1080p 及以下的高码率 HLS 合流，文件可能更大 |
 
-This repository includes `.gitignore` rules to exclude common downloaded media and subtitle files.
+示例：
 
-## Compliance
+```bash
+ytdl-local "https://www.youtube.com/watch?v=VIDEO_ID" --out ./downloads --cookies-from-browser chrome --quality sharp
+```
 
-This is a personal learning project. It is provided for studying Node.js CLI development and local process orchestration with tools such as `yt-dlp` and `ffmpeg`.
+## 输出
 
-Use this tool only for content that you own, are authorized to download, or that the platform explicitly permits you to download.
+下载结果会保存到输出目录：
 
-Do not use this project to bypass DRM, paid access, private video restrictions, or other access controls.
+```text
+downloads/
+  视频标题 [VIDEO_ID].mkv
+  视频标题 [VIDEO_ID].<lang>.srt
+```
 
-Do not use this project to infringe copyright, redistribute third-party videos, mirror protected content, or violate platform terms.
+`.mkv` 内已包含视频和音频；字幕会保存视频提供的所有语言，不含直播聊天字幕。
+
+## 注意
+
+- 不要上传下载的视频、字幕、cookies 或登录态数据到 GitHub。
+- iPhone 播放 `.mkv` 和外挂字幕建议使用 VLC for iOS。
+- 本项目不用于绕过 DRM、付费访问、私密视频限制或其他访问控制。

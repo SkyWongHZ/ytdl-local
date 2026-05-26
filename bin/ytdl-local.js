@@ -7,9 +7,12 @@ import path from "node:path";
 const YTDLP = "yt-dlp";
 const FFMPEG = "ffmpeg";
 const NODE_JS_RUNTIME = `node:${process.execPath}`;
+const QUALITY_AUTO = "auto";
 const QUALITY_STABLE = "stable";
 const QUALITY_SHARP = "sharp";
 const FORMAT_SELECTORS = {
+  [QUALITY_AUTO]:
+    "bv*[height>1080][vcodec^=vp9]+ba/bv*[height>1080][vcodec^=vp09]+ba/bv*[height>1080][vcodec!*=av01]+ba/bv*[vcodec^=vp9]+ba/bv*[vcodec^=vp09]+ba/bv*[vcodec!*=av01]+ba/b",
   [QUALITY_STABLE]: "bv*[vcodec^=vp9]+ba/bv*[vcodec^=vp09]+ba/bv*[vcodec!*=av01]+ba/b",
   [QUALITY_SHARP]:
     "bv*[height>1080][vcodec^=vp9]+ba/bv*[height>1080][vcodec^=vp09]+ba/bv*[height>1080][vcodec!*=av01]+ba/b[height<=1080][protocol*=m3u8]/b[height<=1080]/bv*[vcodec^=vp9]+ba/bv*[vcodec^=vp09]+ba/bv*[vcodec!*=av01]+ba/b",
@@ -66,7 +69,7 @@ function parseArgs(args) {
     url: null,
     out: null,
     cookiesFromBrowser: null,
-    quality: QUALITY_STABLE,
+    quality: QUALITY_AUTO,
     help: false,
   };
 
@@ -150,11 +153,11 @@ function parseArgs(args) {
 }
 
 function parseQuality(value) {
-  if (value === QUALITY_STABLE || value === QUALITY_SHARP) {
+  if (value === QUALITY_AUTO || value === QUALITY_STABLE || value === QUALITY_SHARP) {
     return value;
   }
 
-  throw new Error(`Invalid quality: ${value}. Use "stable" or "sharp".`);
+  throw new Error(`Invalid quality: ${value}. Use "auto", "stable", or "sharp".`);
 }
 
 function validateYoutubeUrl(value) {
@@ -215,6 +218,7 @@ function buildDownloadArgs(url, outputDir, hasManualSubtitles, options) {
   const args = [
     ...buildBaseYtDlpArgs(options),
     "--no-playlist",
+    "--abort-on-unavailable-fragments",
     "-f",
     FORMAT_SELECTORS[options.quality],
     "--merge-output-format",
@@ -306,7 +310,7 @@ function runInherited(command, args) {
 
 function printHelp() {
   console.log(`Usage:
-  ytdl-local "YOUTUBE_URL" [--out ./downloads] [--cookies-from-browser chrome] [--quality stable|sharp]
+  ytdl-local "YOUTUBE_URL" [--out ./downloads] [--cookies-from-browser chrome] [--quality auto|stable|sharp]
 
 Examples:
   ytdl-local "https://www.youtube.com/watch?v=VIDEO_ID"
