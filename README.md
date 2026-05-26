@@ -25,7 +25,7 @@
 ## 依赖
 
 - Node.js 18+
-- `yt-dlp`
+- [yt-dlp/yt-dlp](https://github.com/yt-dlp/yt-dlp)
 - `ffmpeg`
 
 ```bash
