@@ -83,3 +83,7 @@ downloads/
 - 不要上传下载的视频、字幕、cookies 或登录态数据到 GitHub。
 - iPhone 播放 `.mkv` 和外挂字幕建议使用 VLC for iOS。
 - 本项目不用于绕过 DRM、付费访问、私密视频限制或其他访问控制。
+
+
+## 参考链接
+https://github.com/yt-dlp/yt-dlp
