@@ -1,0 +1,1 @@
+ytdl-local "https://www.youtube.com/watch?v=T8tqgQVJv2Y" --out ./downloads --cookies-from-browser chrome
